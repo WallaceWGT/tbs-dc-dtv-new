@@ -1,0 +1,158 @@
+{% extends 'public/base.html' %}
+{% load mytags %}
+{% csrf_token %}
+
+<!-- 头部标签菜单-->
+{% block page-tabs %}
+    <span style="float: left" class="view-tag-left layui-breadcrumb">
+        <a href="/visual/view">可视化报表</a>
+        <a><cite>菜单配置</cite></a>
+    </span>
+{% endblock %}
+
+<!-- 左侧菜单 -->
+{% block page-menu %}
+     <style>
+        .layui-side-menu .layui-nav .layui-nav-item a{
+            padding-left: 20px;
+        }
+    </style>
+   <div class="layui-side-scroll">
+       <div class="layui-logo" lay-href="">
+           <span>数据可视化</span>
+       </div>
+       <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
+           <li data-name="home" class="layui-nav-item">
+               <a href="javascript:;" lay-tips="主页" lay-direction="2" class="main-menu-edit">
+                   <cite>主页</cite>
+               </a>
+           </li>
+           {% for i in request.report_menu %}
+               <li data-name="home" class="layui-nav-item">
+                   <a class="menu-edit" lay-tips="app" lay-direction="1" mid="{{ i.mid }}" level="0">
+                       <cite>{{ i.mid | get_menu_name }}</cite>
+                   </a>
+                   {% for k in i.report %}
+                       {% if k.online == 1 %}
+                            <dd class="layui-nav-child report-edit" vid="{{ k.vid }}" mid="{{ k.mid_id }}" report_type="{{ k.report_type }}" online="{{ k.online }}">
+                                <a href="/visual/view/?vid={{ k.vid }}" style="padding-left: 45px">{{ k.report_name }}</a>
+                            </dd>
+                       {% else %}
+                            <dd class="layui-nav-child report-edit" vid="{{ k.vid }}" mid="{{ k.mid_id }}" report_type="{{ k.report_type }}" online="{{ k.online }}">
+                                <a style="padding-left: 45px">{{ k.report_name }}</a>
+                            </dd>
+                       {% endif %}
+                   {% endfor %}
+                   {% for j in i.child %}
+                       <dl class="layui-nav-child">
+                           <a class="menu-edit" mid="{{ j.mid }}" level="1" parent_id="{{ j.parent_id }}" style="padding-left: 45px">{{ j.mid | get_menu_name }}</a>
+                           {% for k in j.report %}
+                                {% if k.online == 1 %}
+                                    <dd class="layui-nav-child report-edit" vid="{{ k.vid }}" mid="{{ k.mid_id }}" report_type="{{ k.report_type }}" online="{{ k.online }}">
+                                    <a href="/visual/view/?vid={{ k.vid }}" style="padding-left: 65px">{{ k.report_name }}</a>
+                                     </dd>
+                                {% else %}
+                                     <dd class="layui-nav-child report-edit" vid="{{ k.vid }}" mid="{{ k.mid_id }}" report_type="{{ k.report_type }}" online="{{ k.online }}">
+                                        <a style="padding-left: 65px">{{ k.report_name }}</a>
+                                    </dd>
+                                {% endif %}
+                            {% endfor %}
+                           {% for g in j.child %}
+                               <dl class="layui-nav-child">
+                                   <a class="menu-edit" mid="{{ g.mid }}" level="2" parent_id="{{ g.parent_id }}">{{ g.mid | get_menu_name }}</a>
+                                   {% for k in g.report %}
+                                       {% if k.online == 1 %}
+                                             <dd class="layui-nav-child report-edit" level="3" vid="{{ k.vid }}" mid="{{ k.mid_id }}" report_type="{{ k.report_type }}" online="{{ k.online }}">
+                                                 <a href="/visual/view/?vid={{ k.vid }}" style="padding-left: 83px">{{ k.report_name }}</a>
+                                             </dd>
+                                        {% else %}
+                                             <dd class="layui-nav-child report-edit" vid="{{ k.vid }}" mid="{{ k.mid_id }}" report_type="{{ k.report_type }}" online="{{ k.online }}">
+                                                 <a style="padding-left: 65px">{{ k.report_name }}</a>
+                                             </dd>
+                                        {% endif %}
+                                   {% endfor %}
+                               </dl>
+                           {% endfor %}
+                       </dl>
+                   {% endfor %}
+               </li>
+           {% endfor %}
+       </ul>
+   </div>
+{% endblock %}
+
+<!-- 页面主体 -->
+{% block page-body %}
+    <link rel="stylesheet" href="../../static/report/css/view_menu.css">
+
+    <!-- 编辑菜单的弹窗 -->
+    <div class="menu-module" style="display: none">
+        <div class="menu-edit-module" mid="">
+            <form style="padding-top: 30px" class="old-menu-name">
+                <label style="margin-left: 25px; width: 80px">目录名称</label>
+                <select class="menu-select" name=menu-name" id="" onchange="report_change(this)">
+                    <option value="-1" level="-1">新增</option>
+                    {% for i in request.report_menu %}
+                        <option value="{{ i.mid }}" level="0" parent_id="{{ i.parent_id }}" report="0">{{ i.mid | get_menu_name }}</option>
+                        {% for j in i.child %}
+                            <option value="{{ j.mid }}" parent_id="{{ i.mid }}" level="1" report="0">{{ j.mid | get_menu_name }}</option>
+                            {% for g in j.child %}
+                                <option value="{{ g.mid }}" parent_id="{{ j.mid }}" level="2" report="0">{{ g.mid | get_menu_name }}</option>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                    {% for j in request.report_obj %}
+                        <option value="{{ j.vid }}" parent_id="{{ j.mid_id }}" report_type="{{ j.report_type }}" report="1" online="{{ j.online }}">{{ j.report_name }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            <form class="report-info menu-form" style="padding-top: 20px">
+                <label style="margin-left: 25px; width: 80px">菜单类型</label>
+                <select class="menu-type" name="menu-type" style="" onchange="menu_change(this)">
+                    <option value="1">报表</option>
+                    <option value="0">目录</option>
+                </select>
+            </form>
+            <form class="report-info report-form" style="padding-top: 20px">
+                <label style="margin-left: 25px; width: 80px">报表类型</label>
+                <select class="report-type" name="report-type" style="">
+                    <option value="">请选择</option>
+                    <option value="0">周报</option>
+                    <option value="1">月报</option>
+                    <option value="2">其它</option>
+                </select>
+            </form>
+            <form class="report-info online-form" style="padding-top: 20px">
+                <label style="margin-left: 25px; width: 80px">是否上线</label>
+                <select class="online" name="online" style="">
+                    <option value="1">是</option>
+                    <option value="0">否</option>
+                </select>
+            </form>
+            <form class="layui-form menu-name" action="">
+                <div class="layui-inline" style="margin-top: 20px">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label" style="width: 80px">新增或变更填写</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="menu-name" placeholder="请输入" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="layui-form" style="margin-top: 25px">
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" onclick="add(this)">添加目录</button>
+                        <button class="layui-btn" onclick="update(this)">编辑目录</button>
+                        <button class="layui-btn" onclick="del(this)">删除目录</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../static/report/layuiadmin/layui/layui.js"></script>
+    <script src="../../static/public/plugins/common/jquery.min.js"></script>
+    <script src="../../static/report/js/view_menu_edit.js"></script>
+
+{% endblock %}

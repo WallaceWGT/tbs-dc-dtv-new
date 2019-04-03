@@ -1,0 +1,90 @@
+{% extends 'public/base.html' %}
+{% load mytags %}
+
+{% block page-menu %}
+     <style>
+        .layui-side-menu .layui-nav .layui-nav-item a{
+            padding-left: 20px;
+        }
+    </style>
+    <div class="layui-side-scroll">
+       <div class="layui-logo" lay-href="">
+           <span>数据可视化</span>
+       </div>
+       <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
+           <li data-name="home" class="layui-nav-item">
+               <a href="javascript:;" lay-tips="主页" lay-direction="2" class="main-menu">
+                   <cite>主页</cite>
+               </a>
+           </li>
+
+           {% for i in request.report_menu %}
+               <li data-name="home" class="layui-nav-item">
+                   <a class="menu-edit" lay-tips="app" lay-direction="1" mid="{{ i.mid }}" level="0">
+                       <cite>{{ i.mid | get_menu_name }}</cite>
+                   </a>
+                   {% for k in i.report %}
+                       {% if k.online == 1 %}
+                            <dd class="layui-nav-child report-edit" vid="{{ k.vid }}" mid="{{ k.mid_id }}" report_type="{{ k.report_type }}" online="{{ k.online }}">
+                                <a href="/visual/view/?vid={{ k.vid }}" style="padding-left: 45px">{{ k.report_name }}</a>
+                            </dd>
+                       {% endif %}
+                   {% endfor %}
+                   {% for j in i.child %}
+                       <dl class="layui-nav-child">
+                           <a class="menu-edit" mid="{{ j.mid }}" level="1" parent_id="{{ j.parent_id }}" style="padding-left: 45px">{{ j.mid | get_menu_name }}</a>
+                           {% for k in j.report %}
+                               {% if k.online == 1 %}
+                                    <dd class="layui-nav-child report-edit" vid="{{ k.vid }}" mid="{{ k.mid_id }}" report_type="{{ k.report_type }}" online="{{ k.online }}">
+                                        <a href="/visual/view/?vid={{ k.vid }}">{{ k.report_name }}</a>
+                                    </dd>
+                               {% endif %}
+                            {% endfor %}
+                           {% for g in j.child %}
+                               <dl class="layui-nav-child">
+                                   <a class="menu-edit" mid="{{ g.mid }}" level="2" parent_id="{{ g.parent_id }}">{{ g.mid | get_menu_name }}</a>
+                                   {% for k in g.report %}
+                                       {% if k.online == 1 %}
+                                            <dd class="layui-nav-child report-edit" style="margin-left: 20px" vid="{{ k.vid }}" mid="{{ k.mid_id }}" report_type="{{ k.report_type }}" online="{{ k.online }}">
+                                                <a href="/visual/view/?vid={{ k.vid }}" style="padding-left: 65px">{{ k.report_name }}</a>
+                                            </dd>
+                                       {% endif %}
+                                   {% endfor %}
+                               </dl>
+                           {% endfor %}
+                       </dl>
+                   {% endfor %}
+               </li>
+           {% endfor %}
+
+
+       </ul>
+   </div>
+    <script src="../../static/public/plugins/common/jquery.min.js"></script>
+    <script>
+        $(function () {
+            console.log('aaa')
+            init_menu()
+        });
+        function init_menu() {
+            $.each($.find('a'), function (i, x) {
+                $(x).parent('dl').removeClass('layui-nav-itemed');
+                $(x).parents('li').removeClass('layui-nav-itemed')
+            });
+            $.each($('.month-btn'), function (i, x) {
+                if($(x).next('dl').length ===  0){
+                    $(x).hide()
+                }
+            });
+            $.each($('.week-btn'), function (i, x) {
+                if($(x).next('dl').length ===  0){
+                    $(x).hide()
+                }
+            })
+        }
+    </script>
+{% endblock %}
+
+{% block page-body %}
+
+{% endblock %}

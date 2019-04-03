@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>数据可视化</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="../../static/report/layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../static/report/layuiadmin/style/admin.css" media="all">
+    <link rel="stylesheet" href="../../static/public/fonts/font-anwesome/css/font-awesome.min.css">
+    <style media="print">
+        @media print {
+            .none-print{
+                display: none;
+            }
+        }
+    </style>
+    <style media="screen">
+        @media screen and (max-device-width: 1920px) {
+            body{
+                width: 1280px;
+                height: 890px;
+            }
+        }
+        @media screen and (max-device-width: 1366px) {
+            body{
+                width: 1280px;
+                height: 890px;
+            }
+        }
+    </style>
+    {% load mytags %}
+</head>
+<body class="layui-layout-body">
+  
+    <div id="LAY_app" class="layadmin-tabspage-none">
+        <div class="layui-layout layui-layout-admin">
+
+        <!-- 头部区域 -->
+        <div class="layui-header none-print">
+            <ul class="layui-nav layui-layout-left">
+                <li class="layui-nav-item layadmin-flexible" lay-unselect>
+                    <a href="javascript:;" layadmin-event="flexible" title="侧边伸缩">
+                        <i class="layui-icon layui-icon-shrink-right" id="LAY_app_flexible"></i>
+                    </a>
+                </li>
+                {% if 3 in request.user.get_user_role_type or 5 in request.user.get_user_role_type%}
+                    <li class="layui-nav-item">
+                    <a href="/visual/menu_setting/">菜单配置</a>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="/visual/admin">系统配置</a>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="/visual/toReport">数据报表</a>
+                    </li>
+                {% else %}
+                    <li class="layui-nav-item">
+                        <a href="/visual/toReport">数据报表</a>
+                    </li>
+                {% endif %}
+
+                {% block page-header %}
+
+                {% endblock %}
+            </ul>
+            <ul class="layui-nav layui-layout-right" lay-filter="layadmin-layout-right">
+                <li class="layui-nav-item layui-hide-xs" lay-unselect>
+                    <a href="javascript:;" layadmin-event="fullscreen">
+                        <i class="layui-icon layui-icon-screen-full"></i>
+                    </a>
+                </li>
+
+                <li class="layui-nav-item" lay-unselect>
+                    <a href="javascript:;">
+                      <cite>{{ request.user.get_user_name}}</cite>
+                    </a>
+                    <dl class="layui-nav-child layui-anim layui-anim-upbit">
+                        <dd>
+                            <a href="/visual/logout">退出</a>
+                        </dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 侧边菜单 -->
+        <div class="layui-side layui-side-menu none-print">
+            {% block page-menu %}
+
+            {% endblock %}
+        </div>
+
+        <!-- 页面标签 -->
+        <div class="layadmin-pagetabs none-print" id="LAY_app_tabs">
+            {% block page-tabs %}
+
+            {% endblock %}
+        </div>
+
+        <!-- 主体内容 -->
+        <div class="layui-body" id="LAY_app_body">
+            <div class="layadmin-tabsbody-item layui-show" id="print" style="overflow-y: scroll; background: #f2f2f2">
+                <div id="draggable-wrapper" style="width: 1280px; height: 300px; border: 1px cadetblue;">
+                    {% block page-body %}
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../static/report/layuiadmin/layui/layui.js"></script>
+    <script src="../../static/public/plugins/zTree_v3/js/jquery.ztree.all.min.js"></script>
+    <script src="../../static/public/plugins/zTree_v3/js/jquery.ztree.core.js"></script>
+    <script src="../../static/public/plugins/zTree_v3/js/jquery.ztree.excheck.min.js"></script>
+    <script src="../../static/report/layuiadmin/modules/tableFilter.js"></script>
+    <script>
+        layui.config({
+            base: '../../static/report/layuiadmin/' //静态资源所在路径
+        }).extend({
+            index: 'lib/index' //主入口模块
+        }).use('index');
+
+        $(function () {
+            auto_adaptive()
+        });
+        
+        function auto_adaptive() {
+            if(window.screen.width<1510){
+                $('#LAY_app').addClass('layadmin-side-shrink')
+            }
+        }
+
+
+    </script>
+
+</body>
+</html>
+
+

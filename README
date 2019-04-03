@@ -1,0 +1,70 @@
+前言
+    该项目是一个数据可视化项目，主要的功能就是可以将不同的数据以不同的状态进行呈现（如：图形，表格，文本，数据块）。在同一个可视化报表中可以自定义添加不块的数据块，
+同时可以改变数据块的布局和大小。可以比较灵活的呈现数据，便于对数据进行分析。
+
+项目目录结构
+├── static  // 静态文件
+│   ├── public
+│   └── report
+├── tbs_dc_dtv // 项目文件
+│   ├── apps   // app文件
+│   │   ├── __init__.py
+│   │   └── report
+│   │       ├── apps.py
+│   │       ├── forms.py  // form表单
+│   │       ├── __init__.py
+│   │       ├── urls.py   // 路由表
+│   │       └── views.py  // 视图
+│   ├── config // app配置文件
+│   │   ├── __init__.py
+│   │   └── setting.py
+│   ├── core   // 项目主逻辑
+│   │   ├── __init__.py
+│   │   ├── visual_admin.py   // 权限管理
+│   │   ├── visual_menu_create.py  // 菜单生成
+│   │   ├── visual_report_config.py // 可视化报表数据块配置
+│   │   ├── visual_report_menu.py   // 菜单配置管理
+│   │   └── visual_report_view_data.py   // 可视化数据获取
+│   ├── __init__.py
+│   ├── libs  // 项目标签和模板
+│   │   ├── display
+│   │   │   ├── apps.py
+│   │   │   ├── __init__.py
+│   │   │   ├── middleware // 自定义中间件
+│   │   │   │   └── visual_base_mid.py
+│   │   │   ├── migrations
+│   │   │   │   └── __init__.py
+│   │   │   ├── models.py  // model文件
+│   │   │   └── templatetags
+│   │   │       ├── __init__.py
+│   │   │       └── mytags.py // 模板标签
+│   │   └── __init__.py
+│   ├── settings.py  // 项目主配置
+│   ├── test.py
+│   ├── urls.py  // 项目主路由
+│   ├── utils    // 工具
+│   │   ├── cache_tool.py  // 缓存工具
+│   │   ├── data_tool.py   // 数据处理工具
+│   │   ├── date_tool.py   // 日期处理工具
+│   │   ├── deal_sql.py    // sql处理工具
+│   │   ├── __init__.py
+│   │   └── mysql_tool.py  // mysql
+│   └── wsgi.py
+└── templates  // 模板文件
+    ├── public  // 公共文件
+    │   ├── base.html  // 主模板
+    │   ├── visual_system.html // 后台模板
+    │   └── index.html // 首页
+    └── report
+        ├── visual_menu_config.html  // 菜单配置
+        ├── visual_system_admin.html // admin管理页面
+        └── visual_view.html         // 可视化页面
+
+
+项目配置：
+    1,依赖安装：项目启动前查询是否含有项目需要的依赖。所需的文件在requirements.txt中
+    2,配置文件配置：tbs-dc-dtv/config/setting.py
+        REDIRECT_URL: 线上环境的数据中心端口和地址
+        MYSQL: 线上环境tbs-dc-bdp数据库
+        REDIS：线上缓存
+    3,对于线上环境将 settings.py 的 debug=True 变更为 debug=False

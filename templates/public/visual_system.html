@@ -1,0 +1,38 @@
+{% extends 'public/base.html' %}
+
+{% block page-tabs %}
+     <span style="float: left" class="view-tag-left layui-breadcrumb">
+        <a href="/visual/view">可视化报表</a>
+        <a><cite>系统配置</cite></a>
+    </span>
+{% endblock %}
+
+{% block page-menu %}
+    <div class="layui-side-scroll">
+        <div class="layui-logo" lay-href="">
+            <span>数据可视化</span>
+        </div>
+        <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
+            <li data-name="home" class="layui-nav-item">
+                <a href="javascript:;" lay-tips="主页" lay-direction="2">
+                    <cite>主页</cite>
+                </a>
+            </li>
+            <li data-name="app" class="layui-nav-item layui-nav-itemed">
+                   <a href="javascript:;" lay-tips="app" lay-direction="2" class="menu-edit" mid="{{ i.mid }}">
+                       <cite>角色权限</cite>
+                   </a>
+                   <dl class="layui-nav-child layui-nav-itemed">
+                       <dd data-name="list" class="layui-this">
+                           <a href="/visual/admin">权限管理</a>
+                       </dd>
+                   </dl>
+               </li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block page-body %}
+
+
+{% endblock %}

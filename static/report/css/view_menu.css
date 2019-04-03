@@ -1,0 +1,37 @@
+.layadmin-pagetabs{
+    padding-right: 18px;
+}
+.filter-calendar{
+    position: absolute;
+    top: 13px;
+    right: 25px;
+    display: inline-block;
+    color: #8db1d7;
+}
+#data-filter{
+    border-radius: 9px;
+    height: 30px;
+    background: rgb(242, 253, 252);
+    border: 0;
+    font-size: 13px;
+    color: rgba(0, 157, 234, 0.47);
+}
+.block-edit-btn, .block-del-btn{
+    display: none;
+}
+.view-tag-right .layui-btn{
+    padding: 0 2px;
+    border: 0;
+    color: #00a0e9;
+    margin-left: -4px
+}
+.menu-select, .report-type, .menu-type, .online{
+    width: 183px;
+    height: 37px;
+    margin-left: 25px;
+    border-width: 1px;
+    border-style: solid;
+    background-color: rgba(0,255,230,0);
+    border-radius: 1px;
+    border-color: #e6e6e6;"
+}

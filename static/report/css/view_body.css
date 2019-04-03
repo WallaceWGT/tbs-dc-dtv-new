@@ -1,0 +1,57 @@
+.layui-table-view{
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+
+.chart-modal, .table-modal, .text-modal, .data-block-modal{
+    display: none;
+}
+.chart-modal span, .table-modal span, .text-modal span, .data-block-modal span{
+    margin-left: 20px;
+    display: inline-block;
+}
+.chart-modal input, .chart-modal textarea, .chart-modal select{
+    margin-left: 20px;
+    display: inline-block;
+}
+.table-modal input, .table-modal textarea, .table-modal select{
+        margin-left: 20px;
+        display: inline-block;
+    }
+.text-modal input, .text-modal textarea, .text-modal select{
+        margin-left: 20px;
+        display: inline-block;
+}
+.data-block-modal input, .data-block-modal textarea, .data-block-modal select{
+    margin-left: 20px;
+    display: inline-block;
+}
+
+.layui-table-view .layui-table {
+    position: relative;
+    width: 100%;
+    margin: 0;
+}
+.block-edit-btn, .block-del-btn {
+    float: right;
+    margin-top: 10px;
+    margin-right: 10px;
+}
+dl{
+    margin-bottom: 0px;
+}
+
+.component-anim-demo{margin-bottom: 50px; font-size: 0; text-align: center}
+.component-anim-demo li{display: inline-block;vertical-align: middle;width: 127px;line-height: 25px;padding: 20px 0;margin:10px; border: 1px solid #e2e2e2;font-size: 14px;text-align: center;color: #666;transition: all .3s;-webkit-transition: all .3s;}
+.component-anim-demo li .layui-icon{display: inline-block; font-size: 36px;}
+.component-anim-demo li .fontclass{display: none;}
+.component-anim-demo li .name{color: #c2c2c2;}
+.component-anim-demo li:hover{background-color: #f2f2f2; color: #000;}
+.component-anim-demo li{width: 222px;}
+.component-anim-demo .layui-anim{width: 150px; height: 150px; line-height: 150px; margin: 0 auto 10px; text-align: center; background-color: #009688; cursor: pointer; color: #fff; border-radius: 50%;}
+.clear{
+    clear: both;
+}
+.data-block{
+    background-color: rgb(255,255,255); border: solid 1px rgba(128,128,128,0.17); margin-top: 3px;
+}

@@ -1,0 +1,499 @@
+{% extends "public/base.html" %}
+{% load mytags %}
+
+<!-- 左侧菜单 -->
+{% block page-menu %}
+    <style>
+        .layui-side-menu .layui-nav .layui-nav-item a{
+            padding-left: 20px;
+        }
+    </style>
+    <div class="layui-side-scroll">
+       <div class="layui-logo" lay-href="">
+           <span>数据可视化</span>
+       </div>
+       <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
+           <li data-name="home" class="layui-nav-item">
+               <a href="javascript:;" lay-tips="主页" lay-direction="2" class="report-edit">
+                   <cite>主页</cite>
+               </a>
+           </li>
+
+            {% for i in request.report_menu %}
+               <li data-name="home" class="layui-nav-item">
+                   <a class="menu-edit" lay-tips="app" lay-direction="1" mid="{{ i.mid }}" level="0">
+                       <cite>{{ i.mid | get_menu_name }}</cite>
+                   </a>
+                   {% for k in i.report %}
+                       {% if k.online == 1 %}
+                            <dd class="layui-nav-child report-edit" vid="{{ k.vid }}" mid="{{ k.mid_id }}" report_type="{{ k.report_type }}" online="{{ k.online }}">
+                                <a href="/visual/view/?vid={{ k.vid }}" style="padding-left: 45px">{{ k.report_name }}</a>
+                            </dd>
+                       {% endif %}
+                   {% endfor %}
+                   {% for j in i.child %}
+                       <dl class="layui-nav-child">
+                           <a class="menu-edit" mid="{{ j.mid }}" level="1" parent_id="{{ j.parent_id }}" style="padding-left: 45px">{{ j.mid | get_menu_name }}</a>
+                           {% for k in j.report %}
+                                {% if k.online == 1 %}
+                                    <dd class="layui-nav-child report-edit" vid="{{ k.vid }}" mid="{{ k.mid_id }}" report_type="{{ k.report_type }}" online="{{ k.online }}">
+                                        <a href="/visual/view/?vid={{ k.vid }}" style="padding-left: 65px">{{ k.report_name }}</a>
+                                     </dd>
+                                {% endif %}
+                            {% endfor %}
+                           {% for g in j.child %}
+                               <dl class="layui-nav-child">
+                                   <a class="menu-edit" mid="{{ g.mid }}" level="2" parent_id="{{ g.parent_id }}">{{ g.mid | get_menu_name }}</a>
+                                   {% for k in g.report %}
+                                       {% if k.online == 1 %}
+                                             <dd class="layui-nav-child report-edit" level="3" vid="{{ k.vid }}" mid="{{ k.mid_id }}" report_type="{{ k.report_type }}" online="{{ k.online }}">
+                                                 <a href="/visual/view/?vid={{ k.vid }}" style="padding-left: 83px">{{ k.report_name }}</a>
+                                             </dd>
+                                        {% endif %}
+                                   {% endfor %}
+                               </dl>
+                           {% endfor %}
+                       </dl>
+                   {% endfor %}
+               </li>
+           {% endfor %}
+       </ul>
+   </div>
+    <script src="../../static/public/plugins/common/jquery.min.js"></script>
+    <script>
+        $(function () {
+            init_menu()
+        });
+function init_menu() {
+    var vid = get_url_param('vid');
+    $.each($('#LAY-system-side-menu').find('dd'), function (i, x) {
+        if ($(x).attr('vid') === vid){
+            $(x).parents('dl').parents('li').addClass('layui-nav-itemed');
+            $(x).parents('li').addClass('layui-nav-itemed');
+            $(x).addClass('layui-this');
+            $(x).parents('dl').addClass('layui-nav-itemed');
+
+        }
+        if(vid === undefined){
+            $(x).parents('li').removeClass('layui-nav-itemed')
+        }
+    });
+    $.each($('.month-btn'), function (i, x) {
+        if($(x).next('dl').length ===  0){
+            $(x).hide()
+        }
+    });
+    $.each($('.week-btn'), function (i, x) {
+        if($(x).next('dl').length ===  0){
+                $(x).hide()
+            }
+    });
+}
+    </script>
+{% endblock %}
+
+<!-- 头部标签菜单 -->
+{% block page-tabs %}
+    <link rel="stylesheet" href="../../static/report/css/view_menu.css">
+
+    <span style="float: left" class="view-tag-left layui-breadcrumb">
+        <a href="/visual/view">可视化报表</a>
+        <a><cite>{{ report_obj.0.report_name }}</cite></a>
+    </span>
+
+    <div style="float: right" class="view-tag-right">
+        {% if 3 in request.user.get_user_role_type or 5 in request.user.get_user_role_type %}
+            <span onclick="enter_edit_mode(this)">编辑报表</span>
+            <span onclick="save_edit(this)" style="display: none">保存编辑</span>
+            <span onclick="add_report_block_modal(this)" style="margin-right: 20px">新增图表</span>
+        {% endif %}
+        <button class="layui-btn layui-btn-sm layui-btn-primary" onclick="get_prev_data(this)">
+          <i class="layui-icon">&#xe603;</i>
+        </button>
+        <button class="layui-btn layui-btn-sm layui-btn-primary" onclick="get_next_data(this)">
+          <i class="layui-icon">&#xe602;</i>
+        </button>
+        <i class="fa fa-calendar filter-calendar report-type" report-type="{{ report_obj.0.report_type }}" style="display: none"></i>
+        <input type="text" id="data-filter" value="">
+    </div>
+
+{% endblock %}
+
+<!-- 主体内容 -->
+{% block page-body %}
+    <link rel="stylesheet" href="http://jqueryui.com/resources/demos/style.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="http://jqueryui.com/resources/demos/style.css">
+    <link rel="stylesheet" href="../../static/public/plugins/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../static/report/layuiadmin/TableFilter/tableFilter.css">
+    <link rel="stylesheet" href="../../static/report/layuiadmin/TableFilter/library/doc.css">
+    <link rel="stylesheet" href="../../static/report/css/view_body.css">
+    <link rel="stylesheet" href="../../static/public/plugins/bootstrap-table-master/dist/bootstrap-table.css">
+    <link rel="stylesheet" href="../../static/public/plugins/select2-develop/dist/css/select2.css">
+    <style>
+        .pagination-detail{
+            display: none;
+        }
+        .ui-widget-content{
+            border: 1px solid #aaaaaa38
+        }
+        .bootstrap-table .fixed-table-pagination > .pagination ul.pagination a {
+            padding: 2px 8px;
+        }
+        .fixed-table-pagination > .pagination {
+            margin-top: 5px!important;
+            margin-bottom: 5px!important;
+        }
+        .pagination>.active>a, .pagination>.active>a:focus, .pagination>.active>a:hover, .pagination>.active>span, .pagination>.active>span:focus, .pagination>.active>span:hover{
+            background-color: #009688 !important;
+            border-color: #009688 !important;
+        }
+        .pagination>li>a, .pagination>li>span{
+            position: relative;
+            float: left;
+            padding: 6px 12px;
+            margin-left: -1px;
+            line-height: 1.42857143;
+            color: rgba(0, 0, 0, 0.69);
+            text-decoration: none;
+            background-color: #fff;
+            border: 1px solid #ddd;
+        }
+
+
+
+
+    </style>
+
+    <!-- 初始化报表数据 -->
+    {% for block_ele in block_objs %}
+        {% if block_ele.block_type == 0 %}
+            <div class="col-md-3 data-block" offset-left="{{ block_ele.block_offset_left }}" offset-top="{{ block_ele.block_offset_top }}" block-ele-width="{{ block_ele.block_ele_width }}" block-ele-height="{{ block_ele.block_ele_height }}">
+                <div class="row block-ele">
+                    <div class="tile chart-block ui-widget-content">
+                        <div class="block-title">
+                            <span name="bid" class="block-show" bid="{{ block_ele.bid }}" block_type="{{ block_ele.block_type }}"></span>
+                        </div>
+                        <div class="layui-card">
+                            <div class="layui-card-header" style="padding: 0 5px 0">
+                                <span>{{ block_ele.block_name }}</span>
+                                <span class="fa fa-edit block-edit-btn" onclick="update_report_block_modal(this)"></span>
+                                <span class="fa fa-trash-o block-del-btn" onclick="del_report_block_modal(this)"></span>
+                            </div>
+                            <div class="layui-card-body" style="padding: 0 5px 0">
+                                <div class="report-chart chart-container" style="width: 100%;height: 500%; position: absolute; margin-top: 30px"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% elif block_ele.block_type == 1 %}
+            <div class="col-md-6 data-block" offset-left="{{ block_ele.block_offset_left }}" offset-top="{{ block_ele.block_offset_top }}" block-ele-width="{{ block_ele.block_ele_width }}" block-ele-height="{{ block_ele.block_ele_height }}">
+                <div class="row block-ele">
+                    <div class="tile table-block ui-widget-content">
+                        <div class="block-title">
+                            <span name="bid" class="block-show" bid="{{ block_ele.bid }}" block_type="{{ block_ele.block_type }}"></span>
+                        </div>
+                        <div class="layui-card" style="height: 100%">
+                            <div class="layui-card-header" style="height: 6%; padding: 0 5px 0">
+                                <span>{{ block_ele.block_name }}</span>
+                                <span class="fa fa-edit block-edit-btn" onclick="update_report_block_modal(this)"></span>
+                                <span class="fa fa-trash-o block-del-btn" onclick="del_report_block_modal(this)"></span>
+                            </div>
+                            <div class="layui-card-body" style="height: 94%; padding: 0 5px 0">
+                                <div class="table-block table-control" style="margin: 7px">
+                                    <table class="my-table display" cellpadding="0" cellspacing="0" border="0"></table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% elif block_ele.block_type == 2 %}
+            <div class="col-md-3 data-block" offset-left="{{ block_ele.block_offset_left }}" offset-top="{{ block_ele.block_offset_top }}" block-ele-width="{{ block_ele.block_ele_width }}" block-ele-height="{{ block_ele.block_ele_height }}">
+                <div class="row block-ele">
+                    <div class="tile text-block ui-widget-content">
+                        <div class="block-title">
+                            <span name="bid" class="block-show" bid="{{ block_ele.bid }}" block_type="{{ block_ele.block_type }}"></span>
+                        </div>
+                        <div class="layui-card">
+                            <div class="layui-card-header" style="padding: 0 5px 0">
+                                <span>{{ block_ele.block_name }}</span>
+                                <span class="fa fa-edit block-edit-btn" onclick="update_report_block_modal(this)"></span>
+                                <span class="fa fa-trash-o block-del-btn" onclick="del_report_block_modal(this)"></span>
+                            </div>
+                            <div class="layui-card-body" style="padding: 0 5px 0">
+                                <ul class="layuiadmin-card-status layuiadmin-home2-usernote">
+                                    <p>{{ block_ele.block_content }}</p>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% elif block_ele.block_type == 3 %}
+            <div class="col-md-6 data-block" offset-left="{{ block_ele.block_offset_left }}" offset-top="{{ block_ele.block_offset_top }}" block-ele-width="{{ block_ele.block_ele_width }}" block-ele-height="{{ block_ele.block_ele_height }}">
+                <div class="row block-ele">
+                    <div class="tile block-data ui-widget-content">
+                        <div class="block-title">
+                            <span name="bid" class="block-show" bid="{{ block_ele.bid }}" block_type="{{ block_ele.block_type }}"></span>
+                        </div>
+                        <div class="layui-card">
+                            <div class="layui-card-header" style="padding: 0 5px 0">
+                                <span>{{ block_ele.block_name }}</span>
+                                <span class="fa fa-edit block-edit-btn" onclick="update_report_block_modal(this)"></span>
+                                <span class="fa fa-trash-o block-del-btn" onclick="del_report_block_modal(this)"></span>
+                            </div>
+                            <div class="layui-card-body" style="padding: 0 5px 0;">
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else%}
+        {% endif %}
+    {% endfor %}
+
+    <!-- 生成编辑报表块的弹窗 -->
+    {% for block_ele in block_objs %}
+        {% if block_ele.block_type == 0 %}
+            <div class="update-chart-modal" bid="{{ block_ele.bid }}" style="display: none">
+             <div class="data-type-form col-md-8">
+                <form action="">
+                    <div>
+                        <span style="display: inline-block;">名称：</span>
+                        <input type="text" style="display:none;" name="bid" value="{{ block_ele.bid }}">
+                        <input type="text" style="display:none;" name="block_type" value="{{ block_ele.block_type }}">
+                        <input type="text" name="block_name" class="form-control" placeholder="{{ block_ele.block_name }}">
+                    </div>
+                    <div>
+                       <span>时间类型：</span>
+                       <select name="date_type" class="form-control date-type" date_type="{{ block_ele.date_type }}">
+                           {% if block_ele.date_type == 0 %}
+                               <option value="0">默认</option>
+                           {% else %}
+                               <option value="1">按日</option>
+                           {% endif %}
+                       </select>
+                    </div>
+                    <div>
+                        <span>图表类型：</span>
+                        <select name="chart_type" class="form-control chart-type" chart_type="{{ block_ele.chart_type }}">
+                            <option value="0">折线图</option>
+                            <option value="1">柱形图</option>
+                            <option value="2">饼图</option>
+                            <option value="3">雷达图</option>
+                            <option value="4">漏洞图</option>
+                        </select>
+                    </div>
+                    <div>
+                        <span>查询sql：</span>
+                        <textarea name="query_sql" rows="8" cols="30" class="form-control">{{ block_ele.query_sql }}</textarea>
+                    </div>
+                </form>
+                 <div class="" style="position: relative; top: 40px; left: 2px">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" onclick="cancel_operate(this)">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="update_report_submit(this)">保存提交</button>
+                </div>
+             </div>
+             </div>
+        {% elif block_ele.block_type == 1 %}
+            <div class="update-table-modal" bid="{{ block_ele.bid }}" style="display:none;">
+            <div class="data-type-form col-md-8">
+                 <form action="">
+                     <div>
+                       <span>时间类型：</span>
+                       <select name="date_type" class="form-control date-type" date_type="{{ block_ele.date_type }}">
+                           {% if block_ele.date_type == 0 %}
+                               <option value="0">默认</option>
+                           {% else %}
+                               <option value="1">按日</option>
+                           {% endif %}
+                       </select>
+                    </div>
+                     <div>
+                        <span>名称：</span>
+                         <input type="text" style="display:none;" name="bid" value="{{ block_ele.bid }}">
+                         <input type="text" style="display:none;" name="block_type" value="{{ block_ele.block_type }}">
+                        <input type="text" name="block_name" class="form-control" placeholder="{{ block_ele.block_name }}">
+                     </div>
+                     <div>
+                        <span>查询sql：</span>
+                        <textarea name="query_sql" id="" cols="30" rows="8" class="form-control">{{ block_ele.query_sql }}</textarea>
+                     </div>
+                </form>
+                 <div class="" style="position: relative; top: 40px; left: 2px">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" onclick="cancel_operate(this)">取消</button>
+                     <button type="button" class="btn btn-primary" onclick="update_report_submit(this)">保存提交</button>
+                </div>
+            </div>
+            </div>
+        {% elif block_ele.block_type == 2 %}
+            <div class="update-text-modal" bid="{{ block_ele.bid }}" style="display:none;">
+            <div class="data-type-form col-md-8">
+                <form action="">
+                    <div>
+                        <span>名称：</span>
+                        <input type="text" style="display:none;" name="bid" value="{{ block_ele.bid }}">
+                        <input type="text" style="display:none;" name="block_type" value="{{ block_ele.block_type }}">
+                        <input type="text" name="block_name" class="form-control" placeholder="{{ block_ele.block_name }}">
+                    </div >
+                    <div>
+                        <span>文本内容：</span>
+                        <textarea name="block_content" id="" cols="30" rows="8" class="form-control">{{ block_ele.block_content }}</textarea>
+                    </div>
+                </form>
+                 <div class="" style="position: relative; top: 40px; left: 2px">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" onclick="cancel_operate(this)">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="update_report_submit(this)">保存提交</button>
+                </div>
+            </div>
+            </div>
+        {% else %}
+            <div class="update-data-block-modal" bid="{{ block_ele.bid }}" style="display: none">
+             <div class="data-type-form col-md-8">
+                <form action="">
+                    <div>
+                        <span>名称：</span>
+                        <input type="text" style="display:none;" name="bid" value="{{ block_ele.bid }}">
+                        <input type="text" style="display:none;" name="block_type" value="{{ block_ele.block_type }}">
+                        <input type="text" name="block_name" class="form-control" placeholder="{{ block_ele.block_name }}">
+                    </div>
+                    <div>
+                        <span>查询sql：</span>
+                        <textarea name="query_sql" id="" cols="30" rows="8" class="form-control">{{ block_ele.query_sql }}</textarea>
+                    </div>
+                </form>
+                  <div class="" style="position: relative; top: 40px; left: 2px">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" onclick="cancel_operate(this)">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="update_report_submit(this)">保存提交</button>
+                </div>
+            </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    <!-- 添加数据块时需要弹出的对话框-->
+    <div class="public-modal" style="display: none">
+        <div class="" role="document" style="width: 600px">
+            <div class="add-modal">
+                <div>
+                    <span style="display:inline-block; margin-left: 20px">报表类型:</span>
+                    <select class="form-control" style="width: 100px; margin-left: 20px" name="report_type" report-type="{{ report_obj.report_type }}">
+                        <option value="0">周报</option>
+                        <option value="1">月报</option>
+                    </select>
+                 </div>
+              <div>
+                  <span style="display:inline-block; margin-left: 20px">日期类型:</span>
+                  <select class="form-control" style="width: 100px; margin-left: 20px" name="date_type" >
+                      <option value="0">默认</option>
+                      <option value="1">按日</option>
+                  </select>
+              </div>
+              <div>
+                  <span style="display:inline-block; margin-left: 20px">数据类型:</span>
+                  <select class="form-control" style="width: 100px; margin-left: 20px" onchange="select_report_block_type(this)" name="block_type">
+                      <option value="">请选择数据类型</option>
+                      <option value="0">图表</option>
+                      <option value="1">表格</option>
+                      <option value="2">文本</option>
+                      <option value="3">数据块</option>
+                  </select>
+              </div>
+
+              <div class="data-type-form">
+
+              </div>
+
+            </div>
+
+            <div class="" style="position: relative; top: 30px; left: 30px">
+                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="cancel_operate(this)">取消</button>
+                <button type="button" class="btn btn-primary" onclick="add_report_submit(this)">保存提交</button>
+            </div>
+        </div>
+    </div>
+    <div class="chart-modal">
+        <form action="">
+            <div>
+                <span style="display: inline-block; margin-left: 20px">名称：</span>
+                <input type="text" name="block_name" class="form-control" style="display: inline-block; margin-left: 20px">
+            </div>
+            <div>
+                <span>图表类型：</span>
+                <select name="chart_type" id="" class="form-control">
+                    <option value="0">折线图</option>
+                    <option value="1">柱形图</option>
+                    <option value="2">饼图</option>
+                    <option value="3">雷达图</option>
+                    <option value="4">漏洞图</option>
+                </select>
+            </div>
+            <div>
+            <span>查询sql：</span>
+                <textarea name="query_sql" id="" cols="30" rows="8" class="form-control"></textarea>
+            </div>
+        </form>
+    </div>
+    <div class="table-modal">
+         <form action="">
+             <div>
+                <span>名称：</span>
+                <input type="text" name="block_name" class="form-control">
+             </div>
+             <div>
+                <span>查询sql：</span>
+                <textarea name="query_sql" id="" cols="30" rows="8" class="form-control"></textarea>
+             </div>
+        </form>
+    </div>
+    <div class="text-modal">
+        <form action="">
+            <div>
+                <span>名称：</span>
+                <input type="text" name="block_name" class="form-control">
+            </div>
+            <div>
+                <span>文本内容：</span>
+                <textarea name="block_content" id="" cols="30" rows="8" class="form-control"></textarea>
+            </div>
+        </form>
+    </div>
+    <div class="data-block-modal">
+        <form action="">
+            <div>
+                <span>名称：</span>
+                <input type="text" name="block_name" class="form-control">
+            </div>
+            <div>
+                <span>查询sql：</span>
+                <textarea name="query_sql" id="" cols="30" rows="8" class="form-control"></textarea>
+            </div>
+        </form>
+    </div>
+
+    <!-- 生成弹窗时的对话框 -->
+    <div class="delete-modal" style="display: none">
+        <div class="" style="position: absolute; top: 35px; left: 86px">
+            <p>确定删除该图表吗？</p>
+            <input type="text" name="bid" value="" style="display: none">
+            <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-top: 20px" onclick="cancel_operate(this)">取消</button>
+            <button type="button" class="btn btn-primary" onclick="del_report_block_submit(this)" style="margin-top: 20px">确定</button>
+        </div>
+    </div>
+
+    <script src="../../static/public/plugins/common/jquery.min.js"></script>
+    <script src="../../static/public/plugins/jquery-ui/js/jquery-ui.min.js"></script>
+    <script src="../../static/public/plugins/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../static/public/plugins/common/echarts.min.js"></script>
+    <script src="../../static/report/plugin/laydate/laydate.js"></script>
+    <script src="../../static/public/js/dateTime.js"></script>
+    <script src="../../static/public/plugins/select2-develop/dist/js/select2.min.js"></script>
+    <script src="../../static/public/plugins/bootstrap-table-master/dist/bootstrap-table.min.js"></script>
+    <script src="../../static/public/plugins/bootstrap-table-master/dist/bootstrap-select2-filter.js"></script>
+    <script src="../../static/report/js/view_main.js"></script>
+
+{% endblock %}
